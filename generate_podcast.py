@@ -31,7 +31,7 @@ chains = {
     "enhance_chain": enhance_prompt | llm | StrOutputParser(),
 }
 
-def process_paper(pdf_path: str) -> str:
+async def process_paper(pdf_path: str) -> str:
     try:
         # Generate the podcast script from the PDF
         logging.info("Generating podcast script...")
@@ -40,7 +40,7 @@ def process_paper(pdf_path: str) -> str:
 
         # Generate the podcast audio files and merge them
         logging.info("Generating podcast audio files...")
-        output_file = generate_podcast(script)
+        output_file = await generate_podcast(script)  # Make sure to await here
         logging.info("Podcast generation complete!")
 
         return output_file

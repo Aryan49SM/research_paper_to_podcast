@@ -1,6 +1,8 @@
 .env
 podcast/
 venv/
+text_papers/
+temp/
 __pycache__/*
 __pycache__/
 .vscode/

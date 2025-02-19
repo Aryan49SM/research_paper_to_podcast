@@ -2,53 +2,60 @@ import datetime
 import os
 import glob
 import re
-from gtts import gTTS
 from pydub import AudioSegment
 import logging
 import uvicorn
+import asyncio
+import edge_tts
 
 def create_directories():
     """Create necessary directories if they don't exist"""
-    
     os.makedirs("podcast", exist_ok=True)
-    
     os.makedirs("podcast/final", exist_ok=True)
-    
     os.makedirs("podcast/segments", exist_ok=True)
 
-def generate_host(text: str, segment_dir: str):
+async def generate_host(text: str, segment_dir: str):
     logging.info("Generating host audio...")
     try:
         now = int(datetime.datetime.now().timestamp())
         output_path = os.path.join(segment_dir, f"host_{now}.mp3")
-        tts = gTTS(text=text, lang='en', tld='ca')
-        tts.save(output_path)
+        
+        # Using a male voice for host
+        communicate = edge_tts.Communicate(text, 'en-US-ChristopherNeural')
+        await communicate.save(output_path)
+        
         logging.info(f"Audio saved to {output_path}")
         return output_path
     except Exception as e:
         logging.error(f"Error in generate_host: {str(e)}")
         raise
 
-def generate_expert(text: str, segment_dir: str):
+async def generate_expert(text: str, segment_dir: str):
     logging.info("Generating expert audio...")
     try:
         now = int(datetime.datetime.now().timestamp())
         output_path = os.path.join(segment_dir, f"expert_{now}.mp3")
-        tts = gTTS(text=text, lang='en', tld='ie')
-        tts.save(output_path)
+        
+        # Using a different male voice for expert
+        communicate = edge_tts.Communicate(text, 'en-GB-RyanNeural')
+        await communicate.save(output_path)
+        
         logging.info(f"Audio saved to {output_path}")
         return output_path
     except Exception as e:
         logging.error(f"Error in generate_expert: {str(e)}")
         raise
 
-def generate_learner(text: str, segment_dir: str):
+async def generate_learner(text: str, segment_dir: str):
     logging.info("Generating learner audio...")
     try:
         now = int(datetime.datetime.now().timestamp())
         output_path = os.path.join(segment_dir, f"learner_{now}.mp3")
-        tts = gTTS(text=text, lang='en', tld='co.in')
-        tts.save(output_path)
+        
+        # Using a female voice for learner
+        communicate = edge_tts.Communicate(text, 'en-US-JennyNeural')
+        await communicate.save(output_path)
+        
         logging.info(f"Audio saved to {output_path}")
         return output_path
     except Exception as e:
@@ -81,7 +88,7 @@ def merge_mp3_files(segment_dir: str, output_file: str):
         logging.error(f"Error in merge_mp3_files: {str(e)}")
         raise
 
-def generate_podcast(script):
+async def generate_podcast(script):
     logging.info("Starting podcast generation")
     try:
         # Create necessary directories
@@ -106,11 +113,11 @@ def generate_podcast(script):
             logging.info(f"Processing {speaker}'s dialogue")
 
             if speaker == "Host":
-                generate_host(text, segment_dir)
+                await generate_host(text, segment_dir)
             elif speaker == "Learner":
-                generate_learner(text, segment_dir)
+                await generate_learner(text, segment_dir)
             elif speaker == "Expert":
-                generate_expert(text, segment_dir)
+                await generate_expert(text, segment_dir)
 
         # Generate final podcast filename
         final_podcast_path = os.path.join("podcast/final", f"podcast_{timestamp}.mp3")
@@ -134,7 +141,7 @@ if __name__ == "__main__":
         """
         
         # Running async function within the main script
-        generate_podcast(script)
+        asyncio.run(generate_podcast(script))
         
         logging.info("Script completed successfully")
     except Exception as e:

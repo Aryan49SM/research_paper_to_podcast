@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from pathlib import Path  # Added this import
+from pathlib import Path
 import uvicorn
 import os
 from datetime import datetime
@@ -10,7 +10,6 @@ import logging
 from generate_podcast import process_paper
 import google.generativeai as genai
 from fastapi.middleware.cors import CORSMiddleware
-from generate_podcast import process_paper
 
 logging.basicConfig(
     level=logging.INFO,
@@ -119,10 +118,10 @@ async def create_podcast(file: UploadFile = File(...)):
             content = await file.read()
             buffer.write(content)
 
-        # Process the paper and generate podcast
-        output_file = process_paper(file_path)
+        # Process the paper and generate podcast - with await
+        output_file = await process_paper(file_path)
         
-        # Get the segments directory (it will be the same timestamp as the final podcast)
+        # Get the segments directory
         timestamp = os.path.basename(output_file).replace("podcast_", "").replace(".mp3", "")
         segments_dir = f"podcast/segments/podcast_{timestamp}"
         
